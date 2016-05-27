@@ -1,0 +1,7 @@
+{
+  "name": "datetime",
+  "private": true,
+  "dependencies": {
+    "jquery": "~2.2.4"
+  }
+}
