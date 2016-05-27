@@ -8,14 +8,21 @@
 </head>
 <body>
 
-<input type="datetime" class="form-control">
-<input type="date" class="form-control">
+<div class="input-group">
+    <input type="datetime" class="form-control">
+    <div class="input-group-btn">
+        <div class="btn btn-default">console.log value</div>
+    </div>
+</div>
 
 <script src="../bower_components/jquery/dist/jquery.min.js"></script>
 <script src="../source/datetime.js"></script>
 <script>
     let model = new Date();
     $('input[type="datetime"]').datetime(model);
+    $('.btn').on('click', function () {
+        console.log(model);
+    });
 </script>
 </body>
 </html>

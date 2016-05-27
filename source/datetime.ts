@@ -48,6 +48,7 @@ class DateTime {
         this.$element.hide();
 
         this.dayInput = new DateTimeInput(this.$wrap.find('input[data-model="day"]'), 31);
+        this.dayInput.setValue(this.model.getDate(), false);
         this.dayInput.on('change', (value:number, next:boolean) => {
             if (value > 0) this.model.setDate(value);
             if (next && value > 3) this.monthInput.focus();
@@ -55,6 +56,7 @@ class DateTime {
         this.dayInput.on('next', () => this.monthInput.focus());
 
         this.monthInput = new DateTimeInput(this.$wrap.find('input[data-model="month"]'), 12);
+        this.monthInput.setValue(this.model.getMonth() + 1, false);
         this.monthInput.on('change', (value:number, next:boolean) => {
             this.model.setMonth(value);
             if (next && value > 1) this.yearInput.focus();
@@ -63,6 +65,7 @@ class DateTime {
         this.monthInput.on('next', () => this.yearInput.focus());
 
         this.yearInput = new DateTimeInput(this.$wrap.find('input[data-model="year"]'), 9999);
+        this.yearInput.setValue(this.model.getFullYear(), false);
         this.yearInput.on('change', (value:number, next:boolean) => {
             this.model.setFullYear(value);
             if (next && value.toString().length > 3) this.hoursInput.focus();
@@ -71,6 +74,7 @@ class DateTime {
         this.yearInput.on('next', () => this.hoursInput.focus());
 
         this.hoursInput = new DateTimeInput(this.$wrap.find('input[data-model="hours"]'), 23);
+        this.hoursInput.setValue(this.model.getHours(), false);
         this.hoursInput.on('change', (value:number, next:boolean) => {
             this.model.setHours(value);
             if (next && value > 2) this.minutesInput.focus();
@@ -79,6 +83,7 @@ class DateTime {
         this.hoursInput.on('next', () => this.minutesInput.focus());
 
         this.minutesInput = new DateTimeInput(this.$wrap.find('input[data-model="minutes"]'), 59);
+        this.minutesInput.setValue(this.model.getMinutes(), false);
         this.minutesInput.on('change', (value:number, next:boolean) => {
             this.model.setMinutes(value);
             if (next && value > 5) {
@@ -176,8 +181,9 @@ class DateTimeInput implements IDateTimeEvent {
     }
 
     setValue(val:number, next:boolean = true) {
-        this.input.val(val);
-        this.buffer.setValue(val.toString());
+        var string = val.toString();
+        this.input.val(DatetimeInputPadLeft(string, this.max.toString().length));
+        this.buffer.setValue(string);
         this.triggerChange(next);
     }
 
