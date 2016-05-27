@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../source/style/datetime.css">
+</head>
+<body>
+
+<input type="datetime" class="form-control">
+<input type="date" class="form-control">
+
+<script src="../bower_components/jquery/dist/jquery.min.js"></script>
+<script src="../source/datetime.js"></script>
+<script>
+    let model = new Date();
+    $('input[type="datetime"]').datetime(model);
+</script>
+</body>
+</html>

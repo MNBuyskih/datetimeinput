@@ -1,0 +1,32 @@
+.datetime-wrapper {
+  display: inline-block;
+  position: relative;
+}
+.datetime-wrapper .datetime-input {
+  position: relative;
+  z-index: 2;
+  width: auto;
+  border: none;
+  padding: 0;
+  text-align: center;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  cursor: default;
+  opacity: 1;
+}
+.datetime-wrapper .datetime-input:focus {
+  opacity: 0;
+  outline: none;
+}
+.datetime-wrapper .datetime-input:focus + .datetime-buffer {
+  opacity: 1;
+}
+.datetime-wrapper .datetime-buffer {
+  cursor: default;
+  position: absolute;
+  z-index: 1;
+  text-align: center;
+  opacity: 0;
+  color: #fff;
+  background: #0a78ff;
+}

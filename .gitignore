@@ -1,0 +1,3 @@
+bower_components
+typings
+!typings/tsd.d.ts
