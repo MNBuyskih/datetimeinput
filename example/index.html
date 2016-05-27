@@ -8,20 +8,20 @@
 </head>
 <body>
 
-<div class="input-group">
-    <input type="datetime" class="form-control">
-    <div class="input-group-btn">
-        <div class="btn btn-default">console.log value</div>
-    </div>
-</div>
+<input type="datetime" class="form-control">
+<div class="btn btn-default" id="get">console.log value</div>
+<div class="btn btn-default" id="set">set 12.07.2012 16:30</div>
 
 <script src="../bower_components/jquery/dist/jquery.min.js"></script>
 <script src="../source/datetime.js"></script>
 <script>
     let model = new Date();
     $('input[type="datetime"]').datetime(model);
-    $('.btn').on('click', function () {
+    $('#get').on('click', function () {
         console.log(model);
+    });
+    $('#set').on('click', function () {
+        $('input[type="datetime"]').data('dateTime').setValue(new Date(2012, 6, 12, 16, 30));
     });
 </script>
 </body>

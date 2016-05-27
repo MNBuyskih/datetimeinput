@@ -12,6 +12,7 @@ var DateTime = (function () {
         this.$element.data('dateTime', this);
         this.$element.data('dateTimeValue', model);
         this.init();
+        this.setValue(this.model);
     }
     DateTime.prototype.init = function () {
         var _this = this;
@@ -33,7 +34,6 @@ var DateTime = (function () {
         this.$wrap.find('input[size=4]').datetimeInputFitWidth(4);
         this.$element.hide();
         this.dayInput = new DateTimeInput(this.$wrap.find('input[data-model="day"]'), 31);
-        this.dayInput.setValue(this.model.getDate(), false);
         this.dayInput.on('change', function (value, next) {
             if (value > 0)
                 _this.model.setDate(value);
@@ -42,7 +42,6 @@ var DateTime = (function () {
         });
         this.dayInput.on('next', function () { return _this.monthInput.focus(); });
         this.monthInput = new DateTimeInput(this.$wrap.find('input[data-model="month"]'), 12);
-        this.monthInput.setValue(this.model.getMonth() + 1, false);
         this.monthInput.on('change', function (value, next) {
             _this.model.setMonth(value);
             if (next && value > 1)
@@ -51,7 +50,6 @@ var DateTime = (function () {
         this.monthInput.on('prev', function () { return _this.dayInput.focus(); });
         this.monthInput.on('next', function () { return _this.yearInput.focus(); });
         this.yearInput = new DateTimeInput(this.$wrap.find('input[data-model="year"]'), 9999);
-        this.yearInput.setValue(this.model.getFullYear(), false);
         this.yearInput.on('change', function (value, next) {
             _this.model.setFullYear(value);
             if (next && value.toString().length > 3)
@@ -60,7 +58,6 @@ var DateTime = (function () {
         this.yearInput.on('prev', function () { return _this.monthInput.focus(); });
         this.yearInput.on('next', function () { return _this.hoursInput.focus(); });
         this.hoursInput = new DateTimeInput(this.$wrap.find('input[data-model="hours"]'), 23);
-        this.hoursInput.setValue(this.model.getHours(), false);
         this.hoursInput.on('change', function (value, next) {
             _this.model.setHours(value);
             if (next && value > 2)
@@ -69,7 +66,6 @@ var DateTime = (function () {
         this.hoursInput.on('prev', function () { return _this.yearInput.focus(); });
         this.hoursInput.on('next', function () { return _this.minutesInput.focus(); });
         this.minutesInput = new DateTimeInput(this.$wrap.find('input[data-model="minutes"]'), 59);
-        this.minutesInput.setValue(this.model.getMinutes(), false);
         this.minutesInput.on('change', function (value, next) {
             _this.model.setMinutes(value);
             if (next && value > 5) {
@@ -78,6 +74,13 @@ var DateTime = (function () {
             }
         });
         this.minutesInput.on('prev', function () { return _this.hoursInput.focus(); });
+    };
+    DateTime.prototype.setValue = function (date) {
+        this.dayInput.setValue(date.getDate(), false);
+        this.monthInput.setValue(date.getMonth() + 1, false);
+        this.yearInput.setValue(date.getFullYear(), false);
+        this.hoursInput.setValue(date.getHours(), false);
+        this.minutesInput.setValue(date.getMinutes(), false);
     };
     return DateTime;
 }());
