@@ -10,7 +10,7 @@ $.fn.datetimeInputFitWidth = function (length:number, correction?:number) {
     $.each(this, (n, el) => new DatetimeInputFitWidth(el, length, correction));
 };
 
-class DateTime {
+class DateTime implements IDateTimeEvent {
     private $element:JQuery;
     private $wrap:JQuery;
     private dayInput:DateTimeInput;
@@ -18,6 +18,7 @@ class DateTime {
     private yearInput:DateTimeInput;
     private hoursInput:DateTimeInput;
     private minutesInput:DateTimeInput;
+    _events:any = {};
 
     constructor(private element:HTMLElement, public model:Date) {
         this.$element = $(this.element);
@@ -26,6 +27,16 @@ class DateTime {
 
         this.init();
         this.setValue(this.model);
+    }
+
+    on(eventName:string, cb:Function):void {
+        if (!this._events[eventName]) this._events[eventName] = [];
+        this._events[eventName].push(cb);
+    }
+
+    trigger(eventName:string, ...params):void {
+        if (!this._events[eventName]) this._events[eventName] = [];
+        this._events[eventName] && this._events[eventName].forEach((cb) => cb.apply(null, params));
     }
 
     init() {
@@ -50,7 +61,7 @@ class DateTime {
 
         this.dayInput = new DateTimeInput(this.$wrap.find('input[data-model="day"]'), 31);
         this.dayInput.on('change', (value:number, next:boolean) => {
-            if (value > 0) this.model.setDate(value);
+            if (value > 0) this.model.setDate(value) && this.trigger('change', this.model);
             if (next && value > 3) this.monthInput.focus();
         });
         this.dayInput.on('next', () => this.monthInput.focus());
@@ -58,6 +69,7 @@ class DateTime {
         this.monthInput = new DateTimeInput(this.$wrap.find('input[data-model="month"]'), 12, 1);
         this.monthInput.on('change', (value:number, next:boolean) => {
             this.model.setMonth(value);
+            this.trigger('change', this.model);
             if (next && value > 1) this.yearInput.focus();
         });
         this.monthInput.on('prev', () => this.dayInput.focus());
@@ -66,6 +78,7 @@ class DateTime {
         this.yearInput = new DateTimeInput(this.$wrap.find('input[data-model="year"]'), 9999);
         this.yearInput.on('change', (value:number, next:boolean) => {
             this.model.setFullYear(value);
+            this.trigger('change', this.model);
             if (next && value.toString().length > 3) this.hoursInput.focus();
         });
         this.yearInput.on('prev', () => this.monthInput.focus());
@@ -74,6 +87,7 @@ class DateTime {
         this.hoursInput = new DateTimeInput(this.$wrap.find('input[data-model="hours"]'), 23);
         this.hoursInput.on('change', (value:number, next:boolean) => {
             this.model.setHours(value);
+            this.trigger('change', this.model);
             if (next && value > 2) this.minutesInput.focus();
         });
         this.hoursInput.on('prev', () => this.yearInput.focus());
@@ -82,6 +96,7 @@ class DateTime {
         this.minutesInput = new DateTimeInput(this.$wrap.find('input[data-model="minutes"]'), 59);
         this.minutesInput.on('change', (value:number, next:boolean) => {
             this.model.setMinutes(value);
+            this.trigger('change', this.model);
             if (next && value > 5) {
                 this.hoursInput.focus();
                 this.minutesInput.focus();
@@ -264,7 +279,7 @@ class DateTimeBuffer implements IDateTimeEvent {
     set buffer(value:string) {
         this._viewValue = '';
         this._buffer = value;
-        this.trigger('change');
+        this.trigger('change', this.model);
     }
 
     get viewValue() {

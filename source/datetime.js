@@ -8,12 +8,27 @@ var DateTime = (function () {
     function DateTime(element, model) {
         this.element = element;
         this.model = model;
+        this._events = {};
         this.$element = $(this.element);
         this.$element.data('dateTime', this);
         this.$element.data('dateTimeValue', model);
         this.init();
         this.setValue(this.model);
     }
+    DateTime.prototype.on = function (eventName, cb) {
+        if (!this._events[eventName])
+            this._events[eventName] = [];
+        this._events[eventName].push(cb);
+    };
+    DateTime.prototype.trigger = function (eventName) {
+        var params = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            params[_i - 1] = arguments[_i];
+        }
+        if (!this._events[eventName])
+            this._events[eventName] = [];
+        this._events[eventName] && this._events[eventName].forEach(function (cb) { return cb.apply(null, params); });
+    };
     DateTime.prototype.init = function () {
         var _this = this;
         this.$wrap = $('<div class="datetime-wrapper">' +
@@ -36,7 +51,7 @@ var DateTime = (function () {
         this.dayInput = new DateTimeInput(this.$wrap.find('input[data-model="day"]'), 31);
         this.dayInput.on('change', function (value, next) {
             if (value > 0)
-                _this.model.setDate(value);
+                _this.model.setDate(value) && _this.trigger('change', _this.model);
             if (next && value > 3)
                 _this.monthInput.focus();
         });
@@ -44,6 +59,7 @@ var DateTime = (function () {
         this.monthInput = new DateTimeInput(this.$wrap.find('input[data-model="month"]'), 12, 1);
         this.monthInput.on('change', function (value, next) {
             _this.model.setMonth(value);
+            _this.trigger('change', _this.model);
             if (next && value > 1)
                 _this.yearInput.focus();
         });
@@ -52,6 +68,7 @@ var DateTime = (function () {
         this.yearInput = new DateTimeInput(this.$wrap.find('input[data-model="year"]'), 9999);
         this.yearInput.on('change', function (value, next) {
             _this.model.setFullYear(value);
+            _this.trigger('change', _this.model);
             if (next && value.toString().length > 3)
                 _this.hoursInput.focus();
         });
@@ -60,6 +77,7 @@ var DateTime = (function () {
         this.hoursInput = new DateTimeInput(this.$wrap.find('input[data-model="hours"]'), 23);
         this.hoursInput.on('change', function (value, next) {
             _this.model.setHours(value);
+            _this.trigger('change', _this.model);
             if (next && value > 2)
                 _this.minutesInput.focus();
         });
@@ -68,6 +86,7 @@ var DateTime = (function () {
         this.minutesInput = new DateTimeInput(this.$wrap.find('input[data-model="minutes"]'), 59);
         this.minutesInput.on('change', function (value, next) {
             _this.model.setMinutes(value);
+            _this.trigger('change', _this.model);
             if (next && value > 5) {
                 _this.hoursInput.focus();
                 _this.minutesInput.focus();
@@ -253,7 +272,7 @@ var DateTimeBuffer = (function () {
         set: function (value) {
             this._viewValue = '';
             this._buffer = value;
-            this.trigger('change');
+            this.trigger('change', this.model);
         },
         enumerable: true,
         configurable: true

@@ -11,6 +11,7 @@
 <div datetime ng-model="model" class="form-control" ng-model-options="{allowInvalid: true}"></div>
 <pre>{{model}}</pre>
 <div class="btn btn-default" ng-click="setCustomDate()">set 12.07.2012 16:30</div>
+<div class="btn btn-default" ng-click="setCustomMonth()">set Next Month</div>
 <div id="console"></div>
 
 <script src="../bower_components/jquery/dist/jquery.min.js"></script>
@@ -23,9 +24,12 @@
                 $scope.model = new Date();
                 $scope.setCustomDate = function () {
                     $scope.model = new Date(2012, 6, 12, 16, 30);
-                }
+                };
+                $scope.setCustomMonth = function () {
+                    $scope.model.setMonth($scope.model.getMonth() + 1);
+                };
             })
-            .directive('datetime', function () {
+            .directive('datetime', function ($timeout) {
                 return {
                     restrict: "A",
                     require: 'ngModel',
@@ -37,10 +41,15 @@
                             if (!newValue) return;
                             if (!datetime) {
                                 datetime = $element.datetime(newValue);
-//                                datetime.on('change', function () {
-//                                    console.log('change');
-//                                    $scope.apply();
-//                                });
+                                datetime.on('change', function (date) {
+                                    $timeout(function () {
+                                        $scope.ngModel.$modelValue.setDate(date.getDate());
+                                        $scope.ngModel.$modelValue.setMonth(date.getMonth());
+                                        $scope.ngModel.$modelValue.setFullYear(date.getFullYear());
+                                        $scope.ngModel.$modelValue.setHours(date.getHours());
+                                        $scope.ngModel.$modelValue.setMinutes(date.getMinutes());
+                                    });
+                                });
                             }
                             else datetime.setValue(newValue);
                         });
