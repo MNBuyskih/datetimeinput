@@ -15,7 +15,6 @@
   opacity: 1;
 }
 .datetime-wrapper .datetime-input:focus {
-  opacity: 0;
   outline: none;
 }
 .datetime-wrapper .datetime-input:focus + .datetime-buffer {

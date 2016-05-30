@@ -129,6 +129,8 @@ class DateTimeInput implements IDateTimeEvent {
                     case 46: // delete
                         e.preventDefault();
                         this.setValue(0);
+                        this.buffer.reset();
+                        this.selectAll();
                         break;
                     case 9: // tab
                         break;
@@ -147,8 +149,7 @@ class DateTimeInput implements IDateTimeEvent {
             })
             .on('click', () => this.selectAll())
             .on('focus', () => {
-                this.buffer.viewValue = this.input.val();
-                this.bufferSpan.html(this.buffer.viewValue);
+                this.bufferSpan.html(this.buffer.viewValue = this.input.val());
                 this.selectAll();
             })
             .on('blur', () => {
@@ -188,7 +189,6 @@ class DateTimeInput implements IDateTimeEvent {
         val += this.viewCorrection;
         var string = val.toString();
         this.input.val(DatetimeInputPadLeft(string, this.max.toString().length));
-        this.buffer.setValue(string);
         this.triggerChange(next);
     }
 
@@ -199,7 +199,7 @@ class DateTimeInput implements IDateTimeEvent {
     createBufferSpan() {
         this.bufferSpan = $('<span class="datetime-buffer"></span>');
         this.bufferSpan.css({
-            top: this.input.position().top,
+            top: this.input.position().top + 25,
             left: this.input.position().left,
             width: this.input.width(),
             height: this.input.height(),
@@ -219,7 +219,7 @@ class DateTimeInput implements IDateTimeEvent {
 
     private triggerChange(next:boolean = true) {
         var number = this.buffer.numberValue;
-        if (!isNaN(number)) {
+        if (!isNaN(number) && number !== 0) {
             number -= this.viewCorrection;
             if (number < 1) this.input.val(this.buffer.numberValue = 1);
             if (number > this.max) this.input.val(this.buffer.numberValue = this.max);
@@ -284,10 +284,6 @@ class DateTimeBuffer implements IDateTimeEvent {
     reset() {
         this._viewValue = '';
         this.buffer = '';
-    }
-
-    setValue(value:string) {
-        this.buffer = value;
     }
 }
 

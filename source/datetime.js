@@ -117,6 +117,8 @@ var DateTimeInput = (function () {
                 case 46:
                     e.preventDefault();
                     _this.setValue(0);
+                    _this.buffer.reset();
+                    _this.selectAll();
                     break;
                 case 9:
                     break;
@@ -135,8 +137,7 @@ var DateTimeInput = (function () {
         })
             .on('click', function () { return _this.selectAll(); })
             .on('focus', function () {
-            _this.buffer.viewValue = _this.input.val();
-            _this.bufferSpan.html(_this.buffer.viewValue);
+            _this.bufferSpan.html(_this.buffer.viewValue = _this.input.val());
             _this.selectAll();
         })
             .on('blur', function () {
@@ -179,7 +180,6 @@ var DateTimeInput = (function () {
         val += this.viewCorrection;
         var string = val.toString();
         this.input.val(DatetimeInputPadLeft(string, this.max.toString().length));
-        this.buffer.setValue(string);
         this.triggerChange(next);
     };
     DateTimeInput.prototype.focus = function () {
@@ -188,7 +188,7 @@ var DateTimeInput = (function () {
     DateTimeInput.prototype.createBufferSpan = function () {
         this.bufferSpan = $('<span class="datetime-buffer"></span>');
         this.bufferSpan.css({
-            top: this.input.position().top,
+            top: this.input.position().top + 25,
             left: this.input.position().left,
             width: this.input.width(),
             height: this.input.height(),
@@ -206,7 +206,7 @@ var DateTimeInput = (function () {
     DateTimeInput.prototype.triggerChange = function (next) {
         if (next === void 0) { next = true; }
         var number = this.buffer.numberValue;
-        if (!isNaN(number)) {
+        if (!isNaN(number) && number !== 0) {
             number -= this.viewCorrection;
             if (number < 1)
                 this.input.val(this.buffer.numberValue = 1);
@@ -281,9 +281,6 @@ var DateTimeBuffer = (function () {
     DateTimeBuffer.prototype.reset = function () {
         this._viewValue = '';
         this.buffer = '';
-    };
-    DateTimeBuffer.prototype.setValue = function (value) {
-        this.buffer = value;
     };
     return DateTimeBuffer;
 }());
