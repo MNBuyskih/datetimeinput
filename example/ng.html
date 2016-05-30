@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="test" ng-controller="test">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../source/style/datetime.css">
+</head>
+<body>
+
+<div datetime ng-model="model" class="form-control" ng-model-options="{allowInvalid: true}"></div>
+<pre>{{model}}</pre>
+<div class="btn btn-default" ng-click="setCustomDate()">set 12.07.2012 16:30</div>
+<div id="console"></div>
+
+<script src="../bower_components/jquery/dist/jquery.min.js"></script>
+<script src="../bower_components/angular/angular.min.js"></script>
+<script src="../source/datetime.js"></script>
+<script>
+    angular
+            .module('test', [])
+            .controller('test', function ($scope) {
+                $scope.model = new Date();
+                $scope.setCustomDate = function () {
+                    $scope.model = new Date(2012, 6, 12, 16, 30);
+                }
+            })
+            .directive('datetime', function () {
+                return {
+                    restrict: "A",
+                    require: 'ngModel',
+                    scope: {},
+                    link: function ($scope, $element, $attributes, $ngModel) {
+                        let datetime;
+                        $scope.ngModel = $ngModel;
+                        $scope.$watch('ngModel.$modelValue', function (newValue) {
+                            if (!newValue) return;
+                            if (!datetime) {
+                                datetime = $element.datetime(newValue);
+                                datetime.on('change', function () {
+                                    console.log('change');
+                                    $scope.apply();
+                                });
+                            }
+                            else datetime.setValue(newValue);
+                        });
+                    }
+                };
+            });
+</script>
+</body>
+</html>

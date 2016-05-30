@@ -4,7 +4,7 @@ interface JQuery {
 }
 
 $.fn.datetime = function (model:Date) {
-    $.each(this, (n, el) => new DateTime(el, model));
+    return new DateTime($(this)[0], model);
 };
 $.fn.datetimeInputFitWidth = function (length:number, correction?:number) {
     $.each(this, (n, el) => new DatetimeInputFitWidth(el, length, correction));

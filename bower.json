@@ -2,6 +2,7 @@
   "name": "datetime",
   "private": true,
   "dependencies": {
-    "jquery": "~2.2.4"
+    "jquery": "~2.2.4",
+    "angular": "~1.5.6"
   }
 }
