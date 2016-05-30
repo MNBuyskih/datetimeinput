@@ -37,10 +37,10 @@
                             if (!newValue) return;
                             if (!datetime) {
                                 datetime = $element.datetime(newValue);
-                                datetime.on('change', function () {
-                                    console.log('change');
-                                    $scope.apply();
-                                });
+//                                datetime.on('change', function () {
+//                                    console.log('change');
+//                                    $scope.apply();
+//                                });
                             }
                             else datetime.setValue(newValue);
                         });

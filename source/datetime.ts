@@ -103,6 +103,7 @@ class DateTimeInput implements IDateTimeEvent {
     buffer:DateTimeBuffer = new DateTimeBuffer(this.max.toString().length);
     bufferSpan:JQuery;
     _events:any = {};
+    private _inputLength:number;
 
     constructor(private input:JQuery, private max:number, private viewCorrection:number = 0) {
         this.toggleEmptyInput();
@@ -144,6 +145,7 @@ class DateTimeInput implements IDateTimeEvent {
             })
             .on('input', () => {
                 this.toggleEmptyInput();
+                this._inputLength += 1;
                 this.fillBuffer();
                 this.triggerChange();
             })
@@ -154,6 +156,7 @@ class DateTimeInput implements IDateTimeEvent {
             })
             .on('blur', () => {
                 this.input.val(DatetimeInputPadLeft(this.input.val(), this.max.toString().length));
+                this._inputLength = 0;
                 this.buffer.reset();
             });
 
@@ -189,6 +192,7 @@ class DateTimeInput implements IDateTimeEvent {
         val += this.viewCorrection;
         var string = val.toString();
         this.input.val(DatetimeInputPadLeft(string, this.max.toString().length));
+        this.buffer.setValue(string);
         this.triggerChange(next);
     }
 
@@ -199,7 +203,7 @@ class DateTimeInput implements IDateTimeEvent {
     createBufferSpan() {
         this.bufferSpan = $('<span class="datetime-buffer"></span>');
         this.bufferSpan.css({
-            top: this.input.position().top + 25,
+            top: this.input.position().top,
             left: this.input.position().left,
             width: this.input.width(),
             height: this.input.height(),
@@ -214,7 +218,8 @@ class DateTimeInput implements IDateTimeEvent {
     }
 
     fillBuffer() {
-        this.buffer.addLastCharFromString(this.input.val());
+        if (this._inputLength) this.buffer.addLastCharFromString(this.input.val());
+        else this.buffer.setValue(this.input.val());
     }
 
     private triggerChange(next:boolean = true) {
@@ -284,6 +289,10 @@ class DateTimeBuffer implements IDateTimeEvent {
     reset() {
         this._viewValue = '';
         this.buffer = '';
+    }
+
+    setValue(value:string) {
+        this.buffer = value;
     }
 }
 

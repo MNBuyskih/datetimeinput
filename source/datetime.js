@@ -1,5 +1,5 @@
 $.fn.datetime = function (model) {
-    $.each(this, function (n, el) { return new DateTime(el, model); });
+    return new DateTime($(this)[0], model);
 };
 $.fn.datetimeInputFitWidth = function (length, correction) {
     $.each(this, function (n, el) { return new DatetimeInputFitWidth(el, length, correction); });
@@ -132,6 +132,7 @@ var DateTimeInput = (function () {
         })
             .on('input', function () {
             _this.toggleEmptyInput();
+            _this._inputLength += 1;
             _this.fillBuffer();
             _this.triggerChange();
         })
@@ -142,6 +143,7 @@ var DateTimeInput = (function () {
         })
             .on('blur', function () {
             _this.input.val(DatetimeInputPadLeft(_this.input.val(), _this.max.toString().length));
+            _this._inputLength = 0;
             _this.buffer.reset();
         });
         this.buffer.on('change', function () { return _this.bufferSpan.html(_this.buffer.viewValue); });
@@ -180,6 +182,7 @@ var DateTimeInput = (function () {
         val += this.viewCorrection;
         var string = val.toString();
         this.input.val(DatetimeInputPadLeft(string, this.max.toString().length));
+        this.buffer.setValue(string);
         this.triggerChange(next);
     };
     DateTimeInput.prototype.focus = function () {
@@ -188,7 +191,7 @@ var DateTimeInput = (function () {
     DateTimeInput.prototype.createBufferSpan = function () {
         this.bufferSpan = $('<span class="datetime-buffer"></span>');
         this.bufferSpan.css({
-            top: this.input.position().top + 25,
+            top: this.input.position().top,
             left: this.input.position().left,
             width: this.input.width(),
             height: this.input.height(),
@@ -201,7 +204,10 @@ var DateTimeInput = (function () {
         this.input.toggleClass('empty', !this.input.val().length);
     };
     DateTimeInput.prototype.fillBuffer = function () {
-        this.buffer.addLastCharFromString(this.input.val());
+        if (this._inputLength)
+            this.buffer.addLastCharFromString(this.input.val());
+        else
+            this.buffer.setValue(this.input.val());
     };
     DateTimeInput.prototype.triggerChange = function (next) {
         if (next === void 0) { next = true; }
@@ -281,6 +287,9 @@ var DateTimeBuffer = (function () {
     DateTimeBuffer.prototype.reset = function () {
         this._viewValue = '';
         this.buffer = '';
+    };
+    DateTimeBuffer.prototype.setValue = function (value) {
+        this.buffer = value;
     };
     return DateTimeBuffer;
 }());
