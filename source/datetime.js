@@ -41,7 +41,7 @@ var DateTime = (function () {
                 _this.monthInput.focus();
         });
         this.dayInput.on('next', function () { return _this.monthInput.focus(); });
-        this.monthInput = new DateTimeInput(this.$wrap.find('input[data-model="month"]'), 12);
+        this.monthInput = new DateTimeInput(this.$wrap.find('input[data-model="month"]'), 12, 1);
         this.monthInput.on('change', function (value, next) {
             _this.model.setMonth(value);
             if (next && value > 1)
@@ -77,7 +77,7 @@ var DateTime = (function () {
     };
     DateTime.prototype.setValue = function (date) {
         this.dayInput.setValue(date.getDate(), false);
-        this.monthInput.setValue(date.getMonth() + 1, false);
+        this.monthInput.setValue(date.getMonth(), false);
         this.yearInput.setValue(date.getFullYear(), false);
         this.hoursInput.setValue(date.getHours(), false);
         this.minutesInput.setValue(date.getMinutes(), false);
@@ -85,10 +85,12 @@ var DateTime = (function () {
     return DateTime;
 }());
 var DateTimeInput = (function () {
-    function DateTimeInput(input, max) {
+    function DateTimeInput(input, max, viewCorrection) {
         var _this = this;
+        if (viewCorrection === void 0) { viewCorrection = 0; }
         this.input = input;
         this.max = max;
+        this.viewCorrection = viewCorrection;
         this.buffer = new DateTimeBuffer(this.max.toString().length);
         this._events = {};
         this.toggleEmptyInput();
@@ -174,6 +176,7 @@ var DateTimeInput = (function () {
     };
     DateTimeInput.prototype.setValue = function (val, next) {
         if (next === void 0) { next = true; }
+        val += this.viewCorrection;
         var string = val.toString();
         this.input.val(DatetimeInputPadLeft(string, this.max.toString().length));
         this.buffer.setValue(string);
@@ -202,12 +205,14 @@ var DateTimeInput = (function () {
     };
     DateTimeInput.prototype.triggerChange = function (next) {
         if (next === void 0) { next = true; }
-        if (!isNaN(this.buffer.numberValue)) {
-            if (this.buffer.numberValue < 1)
+        var number = this.buffer.numberValue;
+        if (!isNaN(number)) {
+            number -= this.viewCorrection;
+            if (number < 1)
                 this.input.val(this.buffer.numberValue = 1);
-            if (this.buffer.numberValue > this.max)
+            if (number > this.max)
                 this.input.val(this.buffer.numberValue = this.max);
-            this.trigger('change', this.buffer.numberValue, next);
+            this.trigger('change', number, next);
         }
     };
     DateTimeInput.prototype.selectAll = function () {
@@ -217,9 +222,9 @@ var DateTimeInput = (function () {
 }());
 var DateTimeBuffer = (function () {
     function DateTimeBuffer(maxLength) {
-        this.maxLength = maxLength;
         this._buffer = '';
         this._events = {};
+        this.maxLength = maxLength;
     }
     DateTimeBuffer.prototype.on = function (eventName, cb) {
         if (!this._events[eventName])

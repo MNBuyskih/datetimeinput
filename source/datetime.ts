@@ -55,8 +55,7 @@ class DateTime {
         });
         this.dayInput.on('next', () => this.monthInput.focus());
 
-        this.monthInput = new DateTimeInput(this.$wrap.find('input[data-model="month"]'), 12);
-
+        this.monthInput = new DateTimeInput(this.$wrap.find('input[data-model="month"]'), 12, 1);
         this.monthInput.on('change', (value:number, next:boolean) => {
             this.model.setMonth(value);
             if (next && value > 1) this.yearInput.focus();
@@ -93,7 +92,7 @@ class DateTime {
 
     setValue(date:Date) {
         this.dayInput.setValue(date.getDate(), false);
-        this.monthInput.setValue(date.getMonth() + 1, false);
+        this.monthInput.setValue(date.getMonth(), false);
         this.yearInput.setValue(date.getFullYear(), false);
         this.hoursInput.setValue(date.getHours(), false);
         this.minutesInput.setValue(date.getMinutes(), false);
@@ -105,7 +104,7 @@ class DateTimeInput implements IDateTimeEvent {
     bufferSpan:JQuery;
     _events:any = {};
 
-    constructor(private input:JQuery, private max:number) {
+    constructor(private input:JQuery, private max:number, private viewCorrection:number = 0) {
         this.toggleEmptyInput();
         this.input
             .on('keydown', (e) => {
@@ -186,6 +185,7 @@ class DateTimeInput implements IDateTimeEvent {
     }
 
     setValue(val:number, next:boolean = true) {
+        val += this.viewCorrection;
         var string = val.toString();
         this.input.val(DatetimeInputPadLeft(string, this.max.toString().length));
         this.buffer.setValue(string);
@@ -218,10 +218,12 @@ class DateTimeInput implements IDateTimeEvent {
     }
 
     private triggerChange(next:boolean = true) {
-        if (!isNaN(this.buffer.numberValue)) {
-            if (this.buffer.numberValue < 1) this.input.val(this.buffer.numberValue = 1);
-            if (this.buffer.numberValue > this.max) this.input.val(this.buffer.numberValue = this.max);
-            this.trigger('change', this.buffer.numberValue, next);
+        var number = this.buffer.numberValue;
+        if (!isNaN(number)) {
+            number -= this.viewCorrection;
+            if (number < 1) this.input.val(this.buffer.numberValue = 1);
+            if (number > this.max) this.input.val(this.buffer.numberValue = this.max);
+            this.trigger('change', number, next);
         }
     }
 
@@ -234,8 +236,10 @@ class DateTimeBuffer implements IDateTimeEvent {
     private _buffer:string = '';
     private _viewValue:string;
     _events:any = {};
+    maxLength:number;
 
-    constructor(private maxLength:number) {
+    constructor(maxLength:number) {
+        this.maxLength = maxLength;
     }
 
     on(eventName:string, cb:Function):void {
