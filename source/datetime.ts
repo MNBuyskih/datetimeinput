@@ -52,7 +52,7 @@ class DateTime implements IDateTimeEvent {
             '<input class="datetime-input" type="text" data-model="minutes" size="2" placeholder="мм">' +
             '</div>');
         this.$element.after(this.$wrap);
-        this.$wrap.css(this.$element.css(['font', 'border', 'border-radius', 'padding', 'margin', 'line-height', 'color', 'display']));
+        this.$wrap.css(this.$element.css(['font', 'border', 'border-radius', 'padding', 'margin', 'line-height', 'color', 'display', 'background']));
         this.$wrap.find('input').css(this.$element.css(['line-height', 'font', 'color']));
         this.$wrap.find('input[size=2]').datetimeInputFitWidth(2, 2);
         this.$wrap.find('input[size=4]').datetimeInputFitWidth(4);
