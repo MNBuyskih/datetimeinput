@@ -41,15 +41,15 @@ class DateTime implements IDateTimeEvent {
 
     init() {
         this.$wrap = $('<div class="datetime-wrapper">' +
-            '<input class="datetime-input" type="text" data-model="day" size="2" placeholder="дд">' +
+            '<input class="datetime-input" type="text" data-model="day" size="2" maxlength="2" placeholder="дд">' +
             '<span class="datetime-separator">.</span>' +
-            '<input class="datetime-input" type="text" data-model="month" size="2" placeholder="мм">' +
+            '<input class="datetime-input" type="text" data-model="month" size="2" maxlength="2" placeholder="мм">' +
             '<span class="datetime-separator">.</span>' +
-            '<input class="datetime-input" type="text" data-model="year" size="4" placeholder="гггг">' +
+            '<input class="datetime-input" type="text" data-model="year" size="4" maxlength="4" placeholder="гггг">' +
             '<span class="datetime-separator">&nbsp;</span>' +
-            '<input class="datetime-input" type="text" data-model="hours" size="2" placeholder="чч">' +
+            '<input class="datetime-input" type="text" data-model="hours" size="2" maxlength="2" placeholder="чч">' +
             '<span class="datetime-separator">:</span>' +
-            '<input class="datetime-input" type="text" data-model="minutes" size="2" placeholder="мм">' +
+            '<input class="datetime-input" type="text" data-model="minutes" size="2" maxlength="2" placeholder="мм">' +
             '</div>');
         this.$element.after(this.$wrap);
         this.$wrap.css(this.$element.css(['font', 'border', 'border-radius', 'padding', 'margin', 'line-height', 'color', 'display', 'background']));
@@ -61,6 +61,7 @@ class DateTime implements IDateTimeEvent {
 
         this.dayInput = new DateTimeInput(this.$wrap.find('input[data-model="day"]'), 31);
         this.dayInput.on('change', (value:number, next:boolean) => {
+            value = Math.min(value, 31);
             if (value > 0) this.model.setDate(value) && this.trigger('change', this.model);
             if (next && value > 3) this.monthInput.focus();
         });
@@ -68,6 +69,7 @@ class DateTime implements IDateTimeEvent {
 
         this.monthInput = new DateTimeInput(this.$wrap.find('input[data-model="month"]'), 12, 1);
         this.monthInput.on('change', (value:number, next:boolean) => {
+            value = Math.min(value, 12);
             this.model.setMonth(value);
             this.trigger('change', this.model);
             if (next && value > 1) this.yearInput.focus();
@@ -77,6 +79,7 @@ class DateTime implements IDateTimeEvent {
 
         this.yearInput = new DateTimeInput(this.$wrap.find('input[data-model="year"]'), 9999);
         this.yearInput.on('change', (value:number, next:boolean) => {
+            value = Math.min(value, 9999);
             this.model.setFullYear(value);
             this.trigger('change', this.model);
             if (next && value.toString().length > 3) this.hoursInput.focus();
@@ -86,6 +89,7 @@ class DateTime implements IDateTimeEvent {
 
         this.hoursInput = new DateTimeInput(this.$wrap.find('input[data-model="hours"]'), 23);
         this.hoursInput.on('change', (value:number, next:boolean) => {
+            value = Math.min(value, 23);
             this.model.setHours(value);
             this.trigger('change', this.model);
             if (next && value > 2) this.minutesInput.focus();
@@ -95,6 +99,7 @@ class DateTime implements IDateTimeEvent {
 
         this.minutesInput = new DateTimeInput(this.$wrap.find('input[data-model="minutes"]'), 59);
         this.minutesInput.on('change', (value:number, next:boolean) => {
+            value = Math.min(value, 59);
             this.model.setMinutes(value);
             this.trigger('change', this.model);
             if (next && value > 5) {
@@ -279,7 +284,7 @@ class DateTimeBuffer implements IDateTimeEvent {
     set buffer(value:string) {
         this._viewValue = '';
         this._buffer = value;
-        this.trigger('change', this.model);
+        this.trigger('change');
     }
 
     get viewValue() {

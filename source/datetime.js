@@ -32,15 +32,15 @@ var DateTime = (function () {
     DateTime.prototype.init = function () {
         var _this = this;
         this.$wrap = $('<div class="datetime-wrapper">' +
-            '<input class="datetime-input" type="text" data-model="day" size="2" placeholder="дд">' +
+            '<input class="datetime-input" type="text" data-model="day" size="2" maxlength="2" placeholder="дд">' +
             '<span class="datetime-separator">.</span>' +
-            '<input class="datetime-input" type="text" data-model="month" size="2" placeholder="мм">' +
+            '<input class="datetime-input" type="text" data-model="month" size="2" maxlength="2" placeholder="мм">' +
             '<span class="datetime-separator">.</span>' +
-            '<input class="datetime-input" type="text" data-model="year" size="4" placeholder="гггг">' +
+            '<input class="datetime-input" type="text" data-model="year" size="4" maxlength="4" placeholder="гггг">' +
             '<span class="datetime-separator">&nbsp;</span>' +
-            '<input class="datetime-input" type="text" data-model="hours" size="2" placeholder="чч">' +
+            '<input class="datetime-input" type="text" data-model="hours" size="2" maxlength="2" placeholder="чч">' +
             '<span class="datetime-separator">:</span>' +
-            '<input class="datetime-input" type="text" data-model="minutes" size="2" placeholder="мм">' +
+            '<input class="datetime-input" type="text" data-model="minutes" size="2" maxlength="2" placeholder="мм">' +
             '</div>');
         this.$element.after(this.$wrap);
         this.$wrap.css(this.$element.css(['font', 'border', 'border-radius', 'padding', 'margin', 'line-height', 'color', 'display', 'background']));
@@ -50,6 +50,7 @@ var DateTime = (function () {
         this.$element.hide();
         this.dayInput = new DateTimeInput(this.$wrap.find('input[data-model="day"]'), 31);
         this.dayInput.on('change', function (value, next) {
+            value = Math.min(value, 31);
             if (value > 0)
                 _this.model.setDate(value) && _this.trigger('change', _this.model);
             if (next && value > 3)
@@ -58,6 +59,7 @@ var DateTime = (function () {
         this.dayInput.on('next', function () { return _this.monthInput.focus(); });
         this.monthInput = new DateTimeInput(this.$wrap.find('input[data-model="month"]'), 12, 1);
         this.monthInput.on('change', function (value, next) {
+            value = Math.min(value, 12);
             _this.model.setMonth(value);
             _this.trigger('change', _this.model);
             if (next && value > 1)
@@ -67,6 +69,7 @@ var DateTime = (function () {
         this.monthInput.on('next', function () { return _this.yearInput.focus(); });
         this.yearInput = new DateTimeInput(this.$wrap.find('input[data-model="year"]'), 9999);
         this.yearInput.on('change', function (value, next) {
+            value = Math.min(value, 9999);
             _this.model.setFullYear(value);
             _this.trigger('change', _this.model);
             if (next && value.toString().length > 3)
@@ -76,6 +79,7 @@ var DateTime = (function () {
         this.yearInput.on('next', function () { return _this.hoursInput.focus(); });
         this.hoursInput = new DateTimeInput(this.$wrap.find('input[data-model="hours"]'), 23);
         this.hoursInput.on('change', function (value, next) {
+            value = Math.min(value, 23);
             _this.model.setHours(value);
             _this.trigger('change', _this.model);
             if (next && value > 2)
@@ -85,6 +89,7 @@ var DateTime = (function () {
         this.hoursInput.on('next', function () { return _this.minutesInput.focus(); });
         this.minutesInput = new DateTimeInput(this.$wrap.find('input[data-model="minutes"]'), 59);
         this.minutesInput.on('change', function (value, next) {
+            value = Math.min(value, 59);
             _this.model.setMinutes(value);
             _this.trigger('change', _this.model);
             if (next && value > 5) {
@@ -272,7 +277,7 @@ var DateTimeBuffer = (function () {
         set: function (value) {
             this._viewValue = '';
             this._buffer = value;
-            this.trigger('change', this.model);
+            this.trigger('change');
         },
         enumerable: true,
         configurable: true
