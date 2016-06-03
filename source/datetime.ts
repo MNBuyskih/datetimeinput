@@ -10,7 +10,7 @@ $.fn.datetimeInputFitWidth = function (length:number, correction?:number) {
     $.each(this, (n, el) => new DatetimeInputFitWidth(el, length, correction));
 };
 
-class DateTime implements IDateTimeEvent {
+class DateTime {
     private $element:JQuery;
     private $wrap:JQuery;
     private dayInput:DateTimeInput;
@@ -18,7 +18,7 @@ class DateTime implements IDateTimeEvent {
     private yearInput:DateTimeInput;
     private hoursInput:DateTimeInput;
     private minutesInput:DateTimeInput;
-    _events:any = {};
+    event = new EventGen();
 
     constructor(private element:HTMLElement, public model:Date) {
         this.$element = $(this.element);
@@ -27,16 +27,6 @@ class DateTime implements IDateTimeEvent {
 
         this.init();
         this.setValue(this.model);
-    }
-
-    on(eventName:string, cb:Function):void {
-        if (!this._events[eventName]) this._events[eventName] = [];
-        this._events[eventName].push(cb);
-    }
-
-    trigger(eventName:string, ...params):void {
-        if (!this._events[eventName]) this._events[eventName] = [];
-        this._events[eventName] && this._events[eventName].forEach((cb) => cb.apply(null, params));
     }
 
     init() {
@@ -60,54 +50,55 @@ class DateTime implements IDateTimeEvent {
         this.$element.hide();
 
         this.dayInput = new DateTimeInput(this.$wrap.find('input[data-model="day"]'), 31);
-        this.dayInput.on('change', (value:number, next:boolean) => {
+        this.dayInput.event.on('change', (value:number, next:boolean) => {
             value = Math.min(value, 31);
-            if (value > 0) this.model.setDate(value) && this.trigger('change', this.model);
+            this.dayInput.buffer.viewValue = value.toString();
+            if (value > 0) this.model.setDate(value) && this.event.trigger('change', this.model);
             if (next && value > 3) this.monthInput.focus();
         });
-        this.dayInput.on('next', () => this.monthInput.focus());
+        this.dayInput.event.on('next', () => this.monthInput.focus());
 
         this.monthInput = new DateTimeInput(this.$wrap.find('input[data-model="month"]'), 12, 1);
-        this.monthInput.on('change', (value:number, next:boolean) => {
+        this.monthInput.event.on('change', (value:number, next:boolean) => {
             value = Math.min(value, 12);
             this.model.setMonth(value);
-            this.trigger('change', this.model);
+            this.event.trigger('change', this.model);
             if (next && value > 1) this.yearInput.focus();
         });
-        this.monthInput.on('prev', () => this.dayInput.focus());
-        this.monthInput.on('next', () => this.yearInput.focus());
+        this.monthInput.event.on('prev', () => this.dayInput.focus());
+        this.monthInput.event.on('next', () => this.yearInput.focus());
 
         this.yearInput = new DateTimeInput(this.$wrap.find('input[data-model="year"]'), 9999);
-        this.yearInput.on('change', (value:number, next:boolean) => {
+        this.yearInput.event.on('change', (value:number, next:boolean) => {
             value = Math.min(value, 9999);
             this.model.setFullYear(value);
-            this.trigger('change', this.model);
+            this.event.trigger('change', this.model);
             if (next && value.toString().length > 3) this.hoursInput.focus();
         });
-        this.yearInput.on('prev', () => this.monthInput.focus());
-        this.yearInput.on('next', () => this.hoursInput.focus());
+        this.yearInput.event.on('prev', () => this.monthInput.focus());
+        this.yearInput.event.on('next', () => this.hoursInput.focus());
 
         this.hoursInput = new DateTimeInput(this.$wrap.find('input[data-model="hours"]'), 23);
-        this.hoursInput.on('change', (value:number, next:boolean) => {
+        this.hoursInput.event.on('change', (value:number, next:boolean) => {
             value = Math.min(value, 23);
             this.model.setHours(value);
-            this.trigger('change', this.model);
+            this.event.trigger('change', this.model);
             if (next && value > 2) this.minutesInput.focus();
         });
-        this.hoursInput.on('prev', () => this.yearInput.focus());
-        this.hoursInput.on('next', () => this.minutesInput.focus());
+        this.hoursInput.event.on('prev', () => this.yearInput.focus());
+        this.hoursInput.event.on('next', () => this.minutesInput.focus());
 
         this.minutesInput = new DateTimeInput(this.$wrap.find('input[data-model="minutes"]'), 59);
-        this.minutesInput.on('change', (value:number, next:boolean) => {
+        this.minutesInput.event.on('change', (value:number, next:boolean) => {
             value = Math.min(value, 59);
             this.model.setMinutes(value);
-            this.trigger('change', this.model);
+            this.event.trigger('change', this.model);
             if (next && value > 5) {
                 this.hoursInput.focus();
                 this.minutesInput.focus();
             }
         });
-        this.minutesInput.on('prev', () => this.hoursInput.focus());
+        this.minutesInput.event.on('prev', () => this.hoursInput.focus());
     }
 
     setValue(date:Date) {
@@ -119,10 +110,10 @@ class DateTime implements IDateTimeEvent {
     }
 }
 
-class DateTimeInput implements IDateTimeEvent {
+class DateTimeInput {
     buffer:DateTimeBuffer = new DateTimeBuffer(this.max.toString().length);
     bufferSpan:JQuery;
-    _events:any = {};
+    event = new EventGen();
     private _inputLength:number;
 
     constructor(private input:JQuery, private max:number, private viewCorrection:number = 0) {
@@ -132,11 +123,11 @@ class DateTimeInput implements IDateTimeEvent {
                 switch (e.keyCode) {
                     case 37: // left arrow
                         e.preventDefault();
-                        this.trigger('prev');
+                        this.event.trigger('prev');
                         break;
                     case 39: // right arrow
                         e.preventDefault();
-                        this.trigger('next');
+                        this.event.trigger('next');
                         break;
                     case 38: // up arrow
                         e.preventDefault();
@@ -180,18 +171,8 @@ class DateTimeInput implements IDateTimeEvent {
                 this.buffer.reset();
             });
 
-        this.buffer.on('change', () => this.bufferSpan.html(this.buffer.viewValue));
+        this.buffer.event.on('change', () => this.bufferSpan.html(this.buffer.viewValue));
         this.createBufferSpan();
-    }
-
-    on(eventName:string, cb:Function):void {
-        if (!this._events[eventName]) this._events[eventName] = [];
-        this._events[eventName].push(cb);
-    }
-
-    trigger(eventName:string, ...params):void {
-        if (!this._events[eventName]) this._events[eventName] = [];
-        this._events[eventName] && this._events[eventName].forEach((cb) => cb.apply(null, params));
     }
 
     increment(increment:number = 1) {
@@ -248,7 +229,7 @@ class DateTimeInput implements IDateTimeEvent {
             number -= this.viewCorrection;
             if (number < 1) this.input.val(this.buffer.numberValue = 1);
             if (number > this.max) this.input.val(this.buffer.numberValue = this.max);
-            this.trigger('change', number, next);
+            this.event.trigger('change', number, next);
         }
     }
 
@@ -257,24 +238,14 @@ class DateTimeInput implements IDateTimeEvent {
     }
 }
 
-class DateTimeBuffer implements IDateTimeEvent {
+class DateTimeBuffer {
     private _buffer:string = '';
     private _viewValue:string;
-    _events:any = {};
+    event = new EventGen();
     maxLength:number;
 
     constructor(maxLength:number) {
         this.maxLength = maxLength;
-    }
-
-    on(eventName:string, cb:Function):void {
-        if (!this._events[eventName]) this._events[eventName] = [];
-        this._events[eventName].push(cb);
-    }
-
-    trigger(eventName:string, ...params):void {
-        if (!this._events[eventName]) this._events[eventName] = [];
-        this._events[eventName] && this._events[eventName].forEach((cb) => cb.apply(null, params));
     }
 
     get buffer():string {
@@ -284,7 +255,7 @@ class DateTimeBuffer implements IDateTimeEvent {
     set buffer(value:string) {
         this._viewValue = '';
         this._buffer = value;
-        this.trigger('change');
+        this.event.trigger('change');
     }
 
     get viewValue() {
@@ -334,12 +305,45 @@ class DatetimeInputFitWidth {
     }
 }
 
-interface IDateTimeEvent {
-    _events:any;
-    on(eventName:string, cb:Function):void;
-    trigger(eventName:string, ...params:any[]):void;
+class EventGen implements IEventGen {
+    private _events:IEventStorage[] = [];
+
+    trigger(eventName:string, ...params):IEventGen {
+        this._events
+            .filter((e) => e.eventName == eventName)
+            .forEach((e) => e.method.apply(e.thisArg, params));
+
+        return this;
+    }
+
+    on(eventName:string, method:Function, thisArg?:any):IEventGen {
+        this._events.push({eventName, method, thisArg});
+
+        return this;
+    }
 }
 
+interface IEventGen {
+    trigger(eventName:string, ...params);
+    on(eventName:string, method:Function, thisArg?:any);
+}
+
+interface IEventStorage {
+    eventName:string;
+    method:Function;
+    thisArg?:any;
+}
+
+interface IDateTimeEvent {
+    __events:any;
+    _on(eventName:string, cb:Function):void;
+    _trigger(eventName:string, ...params:any[]):void;
+}
+
+function DatetimeLastDayOfMonth(month:number, year?:number):number {
+    year = year || new Date().getFullYear();
+    return new Date(year, month + 1, 0).getDate();
+}
 function DatetimeInputStrRepeat(string:string, times:number) {
     return new Array(times + 1).join(string);
 }

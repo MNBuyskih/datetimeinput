@@ -8,27 +8,13 @@ var DateTime = (function () {
     function DateTime(element, model) {
         this.element = element;
         this.model = model;
-        this._events = {};
+        this.event = new EventGen();
         this.$element = $(this.element);
         this.$element.data('dateTime', this);
         this.$element.data('dateTimeValue', model);
         this.init();
         this.setValue(this.model);
     }
-    DateTime.prototype.on = function (eventName, cb) {
-        if (!this._events[eventName])
-            this._events[eventName] = [];
-        this._events[eventName].push(cb);
-    };
-    DateTime.prototype.trigger = function (eventName) {
-        var params = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            params[_i - 1] = arguments[_i];
-        }
-        if (!this._events[eventName])
-            this._events[eventName] = [];
-        this._events[eventName] && this._events[eventName].forEach(function (cb) { return cb.apply(null, params); });
-    };
     DateTime.prototype.init = function () {
         var _this = this;
         this.$wrap = $('<div class="datetime-wrapper">' +
@@ -49,55 +35,56 @@ var DateTime = (function () {
         this.$wrap.find('input[size=4]').datetimeInputFitWidth(4);
         this.$element.hide();
         this.dayInput = new DateTimeInput(this.$wrap.find('input[data-model="day"]'), 31);
-        this.dayInput.on('change', function (value, next) {
+        this.dayInput.event.on('change', function (value, next) {
             value = Math.min(value, 31);
+            _this.dayInput.buffer.viewValue = value.toString();
             if (value > 0)
-                _this.model.setDate(value) && _this.trigger('change', _this.model);
+                _this.model.setDate(value) && _this.event.trigger('change', _this.model);
             if (next && value > 3)
                 _this.monthInput.focus();
         });
-        this.dayInput.on('next', function () { return _this.monthInput.focus(); });
+        this.dayInput.event.on('next', function () { return _this.monthInput.focus(); });
         this.monthInput = new DateTimeInput(this.$wrap.find('input[data-model="month"]'), 12, 1);
-        this.monthInput.on('change', function (value, next) {
+        this.monthInput.event.on('change', function (value, next) {
             value = Math.min(value, 12);
             _this.model.setMonth(value);
-            _this.trigger('change', _this.model);
+            _this.event.trigger('change', _this.model);
             if (next && value > 1)
                 _this.yearInput.focus();
         });
-        this.monthInput.on('prev', function () { return _this.dayInput.focus(); });
-        this.monthInput.on('next', function () { return _this.yearInput.focus(); });
+        this.monthInput.event.on('prev', function () { return _this.dayInput.focus(); });
+        this.monthInput.event.on('next', function () { return _this.yearInput.focus(); });
         this.yearInput = new DateTimeInput(this.$wrap.find('input[data-model="year"]'), 9999);
-        this.yearInput.on('change', function (value, next) {
+        this.yearInput.event.on('change', function (value, next) {
             value = Math.min(value, 9999);
             _this.model.setFullYear(value);
-            _this.trigger('change', _this.model);
+            _this.event.trigger('change', _this.model);
             if (next && value.toString().length > 3)
                 _this.hoursInput.focus();
         });
-        this.yearInput.on('prev', function () { return _this.monthInput.focus(); });
-        this.yearInput.on('next', function () { return _this.hoursInput.focus(); });
+        this.yearInput.event.on('prev', function () { return _this.monthInput.focus(); });
+        this.yearInput.event.on('next', function () { return _this.hoursInput.focus(); });
         this.hoursInput = new DateTimeInput(this.$wrap.find('input[data-model="hours"]'), 23);
-        this.hoursInput.on('change', function (value, next) {
+        this.hoursInput.event.on('change', function (value, next) {
             value = Math.min(value, 23);
             _this.model.setHours(value);
-            _this.trigger('change', _this.model);
+            _this.event.trigger('change', _this.model);
             if (next && value > 2)
                 _this.minutesInput.focus();
         });
-        this.hoursInput.on('prev', function () { return _this.yearInput.focus(); });
-        this.hoursInput.on('next', function () { return _this.minutesInput.focus(); });
+        this.hoursInput.event.on('prev', function () { return _this.yearInput.focus(); });
+        this.hoursInput.event.on('next', function () { return _this.minutesInput.focus(); });
         this.minutesInput = new DateTimeInput(this.$wrap.find('input[data-model="minutes"]'), 59);
-        this.minutesInput.on('change', function (value, next) {
+        this.minutesInput.event.on('change', function (value, next) {
             value = Math.min(value, 59);
             _this.model.setMinutes(value);
-            _this.trigger('change', _this.model);
+            _this.event.trigger('change', _this.model);
             if (next && value > 5) {
                 _this.hoursInput.focus();
                 _this.minutesInput.focus();
             }
         });
-        this.minutesInput.on('prev', function () { return _this.hoursInput.focus(); });
+        this.minutesInput.event.on('prev', function () { return _this.hoursInput.focus(); });
     };
     DateTime.prototype.setValue = function (date) {
         this.dayInput.setValue(date.getDate(), false);
@@ -116,18 +103,18 @@ var DateTimeInput = (function () {
         this.max = max;
         this.viewCorrection = viewCorrection;
         this.buffer = new DateTimeBuffer(this.max.toString().length);
-        this._events = {};
+        this.event = new EventGen();
         this.toggleEmptyInput();
         this.input
             .on('keydown', function (e) {
             switch (e.keyCode) {
                 case 37:
                     e.preventDefault();
-                    _this.trigger('prev');
+                    _this.event.trigger('prev');
                     break;
                 case 39:
                     e.preventDefault();
-                    _this.trigger('next');
+                    _this.event.trigger('next');
                     break;
                 case 38:
                     e.preventDefault();
@@ -170,23 +157,9 @@ var DateTimeInput = (function () {
             _this._inputLength = 0;
             _this.buffer.reset();
         });
-        this.buffer.on('change', function () { return _this.bufferSpan.html(_this.buffer.viewValue); });
+        this.buffer.event.on('change', function () { return _this.bufferSpan.html(_this.buffer.viewValue); });
         this.createBufferSpan();
     }
-    DateTimeInput.prototype.on = function (eventName, cb) {
-        if (!this._events[eventName])
-            this._events[eventName] = [];
-        this._events[eventName].push(cb);
-    };
-    DateTimeInput.prototype.trigger = function (eventName) {
-        var params = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            params[_i - 1] = arguments[_i];
-        }
-        if (!this._events[eventName])
-            this._events[eventName] = [];
-        this._events[eventName] && this._events[eventName].forEach(function (cb) { return cb.apply(null, params); });
-    };
     DateTimeInput.prototype.increment = function (increment) {
         if (increment === void 0) { increment = 1; }
         var val = this.buffer.numberValue || parseInt(this.input.val()) || 0;
@@ -242,7 +215,7 @@ var DateTimeInput = (function () {
                 this.input.val(this.buffer.numberValue = 1);
             if (number > this.max)
                 this.input.val(this.buffer.numberValue = this.max);
-            this.trigger('change', number, next);
+            this.event.trigger('change', number, next);
         }
     };
     DateTimeInput.prototype.selectAll = function () {
@@ -253,23 +226,9 @@ var DateTimeInput = (function () {
 var DateTimeBuffer = (function () {
     function DateTimeBuffer(maxLength) {
         this._buffer = '';
-        this._events = {};
+        this.event = new EventGen();
         this.maxLength = maxLength;
     }
-    DateTimeBuffer.prototype.on = function (eventName, cb) {
-        if (!this._events[eventName])
-            this._events[eventName] = [];
-        this._events[eventName].push(cb);
-    };
-    DateTimeBuffer.prototype.trigger = function (eventName) {
-        var params = [];
-        for (var _i = 1; _i < arguments.length; _i++) {
-            params[_i - 1] = arguments[_i];
-        }
-        if (!this._events[eventName])
-            this._events[eventName] = [];
-        this._events[eventName] && this._events[eventName].forEach(function (cb) { return cb.apply(null, params); });
-    };
     Object.defineProperty(DateTimeBuffer.prototype, "buffer", {
         get: function () {
             return this._buffer;
@@ -277,7 +236,7 @@ var DateTimeBuffer = (function () {
         set: function (value) {
             this._viewValue = '';
             this._buffer = value;
-            this.trigger('change');
+            this.event.trigger('change');
         },
         enumerable: true,
         configurable: true
@@ -335,6 +294,30 @@ var DatetimeInputFitWidth = (function () {
     };
     return DatetimeInputFitWidth;
 }());
+var EventGen = (function () {
+    function EventGen() {
+        this._events = [];
+    }
+    EventGen.prototype.trigger = function (eventName) {
+        var params = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            params[_i - 1] = arguments[_i];
+        }
+        this._events
+            .filter(function (e) { return e.eventName == eventName; })
+            .forEach(function (e) { return e.method.apply(e.thisArg, params); });
+        return this;
+    };
+    EventGen.prototype.on = function (eventName, method, thisArg) {
+        this._events.push({ eventName: eventName, method: method, thisArg: thisArg });
+        return this;
+    };
+    return EventGen;
+}());
+function DatetimeLastDayOfMonth(month, year) {
+    year = year || new Date().getFullYear();
+    return new Date(year, month + 1, 0).getDate();
+}
 function DatetimeInputStrRepeat(string, times) {
     return new Array(times + 1).join(string);
 }

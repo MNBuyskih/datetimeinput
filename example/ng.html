@@ -41,7 +41,7 @@
                             if (!newValue) return;
                             if (!datetime) {
                                 datetime = $element.datetime(newValue);
-                                datetime.on('change', function (date) {
+                                datetime.event.on('change', function (date) {
                                     $timeout(function () {
                                         $scope.ngModel.$modelValue.setDate(date.getDate());
                                         $scope.ngModel.$modelValue.setMonth(date.getMonth());
