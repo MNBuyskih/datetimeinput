@@ -1,5 +1,6 @@
-.idea
-bower_components
-node_modules
-typings
+.idea/
+bower_components/
+node_modules/
+typings/
+build/
 !typings/tsd.d.ts
