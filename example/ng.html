@@ -8,8 +8,8 @@
 </head>
 <body>
 
-<input datetime ng-model="model" class="form-control" ng-model-options="{allowInvalid: true}">
-<input type="datetime-local" ng-model="model" class="form-control" ng-model-options="{allowInvalid: true}">
+<input type="text" datetime ng-model="model" class="form-control" ng-model-options="{allowInvalid: true}">
+<input type="datetime-local" datetime ng-model="model" class="form-control" ng-model-options="{allowInvalid: true}">
 <pre>{{model}}</pre>
 <div class="btn btn-default" ng-click="setCustomDate()">set 12.07.2012 16:30</div>
 <div class="btn btn-default" ng-click="setCustomMonth()">set Next Month</div>
@@ -23,6 +23,9 @@
             .module('test', [])
             .controller('test', function ($scope) {
                 $scope.model = new Date();
+                $scope.model.setSeconds(0);
+                $scope.model.setMilliseconds(0);
+
                 $scope.setCustomDate = function () {
                     $scope.model = new Date(2012, 6, 12, 16, 30);
                 };
@@ -36,6 +39,13 @@
                     require: 'ngModel',
                     scope: {},
                     link: function ($scope, $element, $attributes, $ngModel) {
+                        if (function () {
+                                    if ($element.attr('type') !== 'datetime-local') return false;
+                                    var i = document.createElement("input");
+                                    i.setAttribute("type", "datetime-local");
+                                    return i.type !== "text";
+                                }()) return;
+
                         let datetime;
                         $scope.ngModel = $ngModel;
                         $scope.$watch('ngModel.$modelValue', function (newValue) {
