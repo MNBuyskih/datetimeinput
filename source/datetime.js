@@ -34,9 +34,9 @@ var DateTime = (function () {
         this.$wrap.find('input[size=2]').datetimeInputFitWidth(2, 2);
         this.$wrap.find('input[size=4]').datetimeInputFitWidth(4);
         this.$element.hide();
-        this.dayInput = new DateTimeInput(this.$wrap.find('input[data-model="day"]'), 31);
+        this.dayInput = new DateTimeInput(this.$wrap.find('input[data-model="day"]'), 31, 0, function () { return DatetimeLastDayOfMonth(_this.model.getMonth()); });
         this.dayInput.event.on('change', function (value, next) {
-            value = Math.min(value, 31);
+            value = Math.min(value, DatetimeLastDayOfMonth(_this.model.getMonth()));
             _this.dayInput.buffer.viewValue = value.toString();
             if (value > 0)
                 _this.model.setDate(value) && _this.event.trigger('change', _this.model);
@@ -47,6 +47,7 @@ var DateTime = (function () {
         this.monthInput = new DateTimeInput(this.$wrap.find('input[data-model="month"]'), 12, 1);
         this.monthInput.event.on('change', function (value, next) {
             value = Math.min(value, 12);
+            _this.dayInput.setValue(Math.min(_this.model.getDate(), DatetimeLastDayOfMonth(value)));
             _this.model.setMonth(value);
             _this.event.trigger('change', _this.model);
             if (next && value > 1)
@@ -96,14 +97,15 @@ var DateTime = (function () {
     return DateTime;
 }());
 var DateTimeInput = (function () {
-    function DateTimeInput(input, max, viewCorrection) {
+    function DateTimeInput(input, max, viewCorrection, maxGetter) {
         var _this = this;
         if (viewCorrection === void 0) { viewCorrection = 0; }
         this.input = input;
-        this.max = max;
         this.viewCorrection = viewCorrection;
-        this.buffer = new DateTimeBuffer(this.max.toString().length);
         this.event = new EventGen();
+        this._max = max;
+        this.maxGetter = maxGetter;
+        this.buffer = new DateTimeBuffer(this.max.toString().length);
         this.toggleEmptyInput();
         this.input
             .on('keydown', function (e) {
@@ -160,6 +162,18 @@ var DateTimeInput = (function () {
         this.buffer.event.on('change', function () { return _this.bufferSpan.html(_this.buffer.viewValue); });
         this.createBufferSpan();
     }
+    Object.defineProperty(DateTimeInput.prototype, "max", {
+        get: function () {
+            if (this.maxGetter)
+                return this.maxGetter();
+            return this._max;
+        },
+        set: function (value) {
+            this._max = value;
+        },
+        enumerable: true,
+        configurable: true
+    });
     DateTimeInput.prototype.increment = function (increment) {
         if (increment === void 0) { increment = 1; }
         var val = this.buffer.numberValue || parseInt(this.input.val()) || 0;
@@ -168,7 +182,7 @@ var DateTimeInput = (function () {
             val = 1;
         if (val < 1)
             val = this.max;
-        this.setValue(val, false);
+        this.setValue(val - this.viewCorrection, false);
     };
     DateTimeInput.prototype.decrement = function (decrement) {
         if (decrement === void 0) { decrement = -1; }
@@ -210,11 +224,10 @@ var DateTimeInput = (function () {
         if (next === void 0) { next = true; }
         var number = this.buffer.numberValue;
         if (!isNaN(number) && number !== 0) {
+            var max = this.max;
             number -= this.viewCorrection;
-            if (number < 1)
-                this.input.val(this.buffer.numberValue = 1);
-            if (number > this.max)
-                this.input.val(this.buffer.numberValue = this.max);
+            if (number > max)
+                this.input.val(this.buffer.numberValue = number = max);
             this.event.trigger('change', number, next);
         }
     };

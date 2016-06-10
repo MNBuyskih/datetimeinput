@@ -49,9 +49,9 @@ class DateTime {
 
         this.$element.hide();
 
-        this.dayInput = new DateTimeInput(this.$wrap.find('input[data-model="day"]'), 31);
+        this.dayInput = new DateTimeInput(this.$wrap.find('input[data-model="day"]'), 31, 0, () => DatetimeLastDayOfMonth(this.model.getMonth()));
         this.dayInput.event.on('change', (value:number, next:boolean) => {
-            value = Math.min(value, 31);
+            value = Math.min(value, DatetimeLastDayOfMonth(this.model.getMonth()));
             this.dayInput.buffer.viewValue = value.toString();
             if (value > 0) this.model.setDate(value) && this.event.trigger('change', this.model);
             if (next && value > 3) this.monthInput.focus();
@@ -61,6 +61,7 @@ class DateTime {
         this.monthInput = new DateTimeInput(this.$wrap.find('input[data-model="month"]'), 12, 1);
         this.monthInput.event.on('change', (value:number, next:boolean) => {
             value = Math.min(value, 12);
+            this.dayInput.setValue(Math.min(this.model.getDate(), DatetimeLastDayOfMonth(value)));
             this.model.setMonth(value);
             this.event.trigger('change', this.model);
             if (next && value > 1) this.yearInput.focus();
@@ -111,12 +112,17 @@ class DateTime {
 }
 
 class DateTimeInput {
-    buffer:DateTimeBuffer = new DateTimeBuffer(this.max.toString().length);
+    buffer:DateTimeBuffer;
     bufferSpan:JQuery;
     event = new EventGen();
+    private _max:number;
+    private maxGetter:Function;
     private _inputLength:number;
 
-    constructor(private input:JQuery, private max:number, private viewCorrection:number = 0) {
+    constructor(private input:JQuery, max:number, private viewCorrection:number = 0, maxGetter?:Function) {
+        this._max = max;
+        this.maxGetter = maxGetter;
+        this.buffer = new DateTimeBuffer(this.max.toString().length);
         this.toggleEmptyInput();
         this.input
             .on('keydown', (e) => {
@@ -175,6 +181,15 @@ class DateTimeInput {
         this.createBufferSpan();
     }
 
+    get max():number {
+        if (this.maxGetter) return this.maxGetter();
+        return this._max;
+    }
+
+    set max(value:number) {
+        this._max = value;
+    }
+
     increment(increment:number = 1) {
         let val = this.buffer.numberValue || parseInt(this.input.val()) || 0;
 
@@ -182,7 +197,7 @@ class DateTimeInput {
         if (val > this.max) val = 1;
         if (val < 1) val = this.max;
 
-        this.setValue(val, false);
+        this.setValue(val - this.viewCorrection, false);
     }
 
     decrement(decrement:number = -1) {
@@ -226,9 +241,10 @@ class DateTimeInput {
     private triggerChange(next:boolean = true) {
         var number = this.buffer.numberValue;
         if (!isNaN(number) && number !== 0) {
+            let max = this.max;
+
             number -= this.viewCorrection;
-            if (number < 1) this.input.val(this.buffer.numberValue = 1);
-            if (number > this.max) this.input.val(this.buffer.numberValue = this.max);
+            if (number > max) this.input.val(this.buffer.numberValue = number = max);
             this.event.trigger('change', number, next);
         }
     }
