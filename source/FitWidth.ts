@@ -8,16 +8,16 @@ module Datetime {
             this.element = element;
             this.length = length;
             this.$element = $(this.element);
-            this.$element.width(this.getWidthSpan() + correction);
+            this.$element.width(spanWidth(this.$element, this.length) + correction);
         }
 
-        getWidthSpan() {
-            let span = $('<span>' + StrRepeat('0', this.length) + '</span>');
-            span.css(this.$element.css(['font', 'padding', 'line-height']));
-            $('body').append(span);
-            let width = span.outerWidth();
-            span.remove();
-            return width;
-        }
+    }
+    export function spanWidth(sourceInput:JQuery, length:number) {
+        let span = $('<span>' + StrRepeat('0', length) + '</span>');
+        span.css(sourceInput.css(['font', 'padding', 'line-height']));
+        $('body').append(span);
+        let width = span.outerWidth();
+        span.remove();
+        return width;
     }
 }
