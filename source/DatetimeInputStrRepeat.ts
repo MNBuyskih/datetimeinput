@@ -1,0 +1,5 @@
+module Datetime {
+    export function DatetimeInputStrRepeat(string:string, times:number) {
+        return new Array(times + 1).join(string);
+    }
+}
