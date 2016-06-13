@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "karma": "^0.13.22",
+    "karma-jasmine": "^1.0.2",
+    "karma-typescript-preprocessor": "^0.2.0"
+  }
+}

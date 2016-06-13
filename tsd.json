@@ -7,6 +7,15 @@
   "installed": {
     "jquery/jquery.d.ts": {
       "commit": "edb64e4a35896510ce02b93c0bca5ec3878db738"
+    },
+    "jasmine/jasmine.d.ts": {
+      "commit": "f481e77dfca5a146db1b4f5f20f15929b30c8729"
+    },
+    "assertion-error/assertion-error.d.ts": {
+      "commit": "f481e77dfca5a146db1b4f5f20f15929b30c8729"
+    },
+    "chai/chai.d.ts": {
+      "commit": "f481e77dfca5a146db1b4f5f20f15929b30c8729"
     }
   }
 }
