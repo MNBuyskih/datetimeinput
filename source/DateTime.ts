@@ -2,12 +2,12 @@ module Datetime {
     export class DateTime {
         private $element:JQuery;
         private $wrap:JQuery;
-        private dayInput:DateTimeInput;
-        private monthInput:DateTimeInput;
-        private yearInput:DateTimeInput;
-        private hoursInput:DateTimeInput;
-        private minutesInput:DateTimeInput;
-        event = new EventGen();
+        private dayInput:Input;
+        private monthInput:Input;
+        private yearInput:Input;
+        private hoursInput:Input;
+        private minutesInput:Input;
+        event = new Event();
 
         constructor(private element:HTMLElement, public model:Date) {
             this.$element = $(this.element);
@@ -38,19 +38,19 @@ module Datetime {
 
             this.$element.hide();
 
-            this.dayInput = new DateTimeInput(this.$wrap.find('input[data-model="day"]'), 31, 0, () => DatetimeLastDayOfMonth(this.model.getMonth()));
+            this.dayInput = new Input(this.$wrap.find('input[data-model="day"]'), 31, 0, () => LastDayOfMonth(this.model.getMonth()));
             this.dayInput.event.on('change', (value:number, next:boolean) => {
-                value = Math.min(value, DatetimeLastDayOfMonth(this.model.getMonth()));
+                value = Math.min(value, LastDayOfMonth(this.model.getMonth()));
                 this.dayInput.buffer.viewValue = value.toString();
                 if (value > 0) this.model.setDate(value) && this.event.trigger('change', this.model);
                 if (next && value > 3) this.monthInput.focus();
             });
             this.dayInput.event.on('next', () => this.monthInput.focus());
 
-            this.monthInput = new DateTimeInput(this.$wrap.find('input[data-model="month"]'), 12, 1);
+            this.monthInput = new Input(this.$wrap.find('input[data-model="month"]'), 12, 1);
             this.monthInput.event.on('change', (value:number, next:boolean) => {
                 value = Math.min(value, 12);
-                this.dayInput.setValue(Math.min(this.model.getDate(), DatetimeLastDayOfMonth(value)));
+                this.dayInput.setValue(Math.min(this.model.getDate(), LastDayOfMonth(value)));
                 this.model.setMonth(value);
                 this.event.trigger('change', this.model);
                 if (next && value > 1) this.yearInput.focus();
@@ -58,7 +58,7 @@ module Datetime {
             this.monthInput.event.on('prev', () => this.dayInput.focus());
             this.monthInput.event.on('next', () => this.yearInput.focus());
 
-            this.yearInput = new DateTimeInput(this.$wrap.find('input[data-model="year"]'), 9999);
+            this.yearInput = new Input(this.$wrap.find('input[data-model="year"]'), 9999);
             this.yearInput.event.on('change', (value:number, next:boolean) => {
                 value = Math.min(value, 9999);
                 this.model.setFullYear(value);
@@ -68,7 +68,7 @@ module Datetime {
             this.yearInput.event.on('prev', () => this.monthInput.focus());
             this.yearInput.event.on('next', () => this.hoursInput.focus());
 
-            this.hoursInput = new DateTimeInput(this.$wrap.find('input[data-model="hours"]'), 23);
+            this.hoursInput = new Input(this.$wrap.find('input[data-model="hours"]'), 23);
             this.hoursInput.event.on('change', (value:number, next:boolean) => {
                 value = Math.min(value, 23);
                 this.model.setHours(value);
@@ -78,7 +78,7 @@ module Datetime {
             this.hoursInput.event.on('prev', () => this.yearInput.focus());
             this.hoursInput.event.on('next', () => this.minutesInput.focus());
 
-            this.minutesInput = new DateTimeInput(this.$wrap.find('input[data-model="minutes"]'), 59);
+            this.minutesInput = new Input(this.$wrap.find('input[data-model="minutes"]'), 59);
             this.minutesInput.event.on('change', (value:number, next:boolean) => {
                 value = Math.min(value, 59);
                 this.model.setMinutes(value);

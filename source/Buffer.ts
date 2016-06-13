@@ -1,8 +1,8 @@
 module Datetime {
-    export class DateTimeBuffer {
+    export class Buffer {
         private _buffer:string = '';
         private _viewValue:string;
-        event = new EventGen();
+        event = new Event();
         maxLength:number;
 
         constructor(maxLength:number) {
@@ -22,7 +22,7 @@ module Datetime {
         get viewValue() {
             if (this._viewValue) return this._viewValue;
             if (!this._buffer) return this._buffer;
-            return DatetimeInputPadLeft(this._buffer, this.maxLength);
+            return StrPadLeft(this._buffer, this.maxLength);
         }
 
         set viewValue(value:string) {

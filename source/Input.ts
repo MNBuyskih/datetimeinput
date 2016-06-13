@@ -1,8 +1,8 @@
 module Datetime {
-    export class DateTimeInput {
-        buffer:DateTimeBuffer;
+    export class Input {
+        buffer:Buffer;
         bufferSpan:JQuery;
-        event = new EventGen();
+        event = new Event();
         private _max:number;
         private maxGetter:Function;
         private _inputLength:number;
@@ -10,7 +10,7 @@ module Datetime {
         constructor(private input:JQuery, max:number, private viewCorrection:number = 0, maxGetter?:Function) {
             this._max = max;
             this.maxGetter = maxGetter;
-            this.buffer = new DateTimeBuffer(this.max.toString().length);
+            this.buffer = new Buffer(this.max.toString().length);
             this.toggleEmptyInput();
             this.input
                 .on('keydown', (e) => {
@@ -60,7 +60,7 @@ module Datetime {
                     this.selectAll();
                 })
                 .on('blur', () => {
-                    this.input.val(DatetimeInputPadLeft(this.input.val(), this.max.toString().length));
+                    this.input.val(StrPadLeft(this.input.val(), this.max.toString().length));
                     this._inputLength = 0;
                     this.buffer.reset();
                 });
@@ -95,7 +95,7 @@ module Datetime {
         setValue(val:number, next:boolean = true) {
             val += this.viewCorrection;
             var string = val.toString();
-            this.input.val(DatetimeInputPadLeft(string, this.max.toString().length));
+            this.input.val(StrPadLeft(string, this.max.toString().length));
             this.buffer.setValue(string);
             this.triggerChange(next);
         }

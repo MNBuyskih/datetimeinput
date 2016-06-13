@@ -3,6 +3,6 @@
         return new Datetime.DateTime($(this)[0], model);
     };
     $.fn.datetimeInputFitWidth = function (length:number, correction?:number) {
-        $.each(this, (n, el) => new Datetime.DatetimeInputFitWidth(el, length, correction));
+        $.each(this, (n, el) => new Datetime.FitWidth(el, length, correction));
     };
 })(jQuery);

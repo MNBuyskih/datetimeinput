@@ -1,5 +1,5 @@
 module Datetime {
-    export class DatetimeInputFitWidth {
+    export class FitWidth {
         private $element:JQuery;
         private element:HTMLElement;
         private length:number;
@@ -12,7 +12,7 @@ module Datetime {
         }
 
         getWidthSpan() {
-            let span = $('<span>' + DatetimeInputStrRepeat('0', this.length) + '</span>');
+            let span = $('<span>' + StrRepeat('0', this.length) + '</span>');
             span.css(this.$element.css(['font', 'padding', 'line-height']));
             $('body').append(span);
             let width = span.outerWidth();
