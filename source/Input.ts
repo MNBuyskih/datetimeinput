@@ -93,11 +93,15 @@ module Datetime {
         }
 
         setValue(val:number, next:boolean = true) {
+            this.setFixedValue(val);
+            this.buffer.setValue(val.toString());
+            this.triggerChange(next);
+        }
+
+        setFixedValue(val:number) {
             val += this.viewCorrection;
             var string = val.toString();
             this.input.val(StrPadLeft(string, this.max.toString().length));
-            this.buffer.setValue(string);
-            this.triggerChange(next);
         }
 
         focus() {

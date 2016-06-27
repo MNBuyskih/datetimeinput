@@ -92,11 +92,11 @@ module Datetime {
         }
 
         setValue(date:Date) {
-            this.dayInput.setValue(date.getDate(), false);
-            this.monthInput.setValue(date.getMonth(), false);
-            this.yearInput.setValue(date.getFullYear(), false);
-            this.hoursInput.setValue(date.getHours(), false);
-            this.minutesInput.setValue(date.getMinutes(), false);
+            this.dayInput.setFixedValue(date.getDate());
+            this.monthInput.setFixedValue(date.getMonth());
+            this.yearInput.setFixedValue(date.getFullYear());
+            this.hoursInput.setFixedValue(date.getHours());
+            this.minutesInput.setFixedValue(date.getMinutes());
         }
     }
 }

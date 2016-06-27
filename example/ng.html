@@ -13,6 +13,7 @@
 <pre>{{model}}</pre>
 <div class="btn btn-default" ng-click="setCustomDate()">set 12.07.2012 16:30</div>
 <div class="btn btn-default" ng-click="setCustomMonth()">set Next Month</div>
+<div class="btn btn-default" ng-click="setNow()">set Now</div>
 <div id="console"></div>
 
 <script src="../bower_components/jquery/dist/jquery.js"></script>
@@ -31,6 +32,9 @@
                 };
                 $scope.setCustomMonth = function () {
                     $scope.model.setMonth($scope.model.getMonth() + 1);
+                };
+                $scope.setNow = function () {
+                    $scope.model = new Date();
                 };
             })
             .directive('datetime', function ($timeout) {
