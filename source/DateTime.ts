@@ -50,9 +50,13 @@ module Datetime {
             this.monthInput = new Input(this.$wrap.find('input[data-model="month"]'), 12, 1);
             this.monthInput.event.on('change', (value:number, next:boolean) => {
                 value = Math.min(value, 12);
-                this.dayInput.setValue(Math.min(this.model.getDate(), LastDayOfMonth(value)));
+
+                let maxDate = LastDayOfMonth(value);
+                if (this.model.getDate() > maxDate) this.dayInput.setValue(maxDate);
+
                 this.model.setMonth(value);
                 this.event.trigger('change', this.model);
+
                 if (next && value > 1) this.yearInput.focus();
             });
             this.monthInput.event.on('prev', () => this.dayInput.focus());
